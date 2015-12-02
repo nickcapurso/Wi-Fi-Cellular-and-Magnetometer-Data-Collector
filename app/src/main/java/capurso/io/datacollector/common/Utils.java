@@ -24,6 +24,18 @@ public class Utils {
     public static final String DATATYPE_CELLULAR = "Cellular";
     public static final String DATATYPE_MAGNETIC = "Magnetic";
 
+    public static final String PREFS_NAME = "DataCollectorPrefs";
+    public static final String PREFS_KEY_NEVERASK_PATH = "never_ask_filepath";
+
+    public static String getDefaultFilePath(){
+        String documentsPath = "";
+        try {
+            documentsPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getCanonicalPath();
+        }catch(IOException error){
+        }
+        return documentsPath;
+    }
+
     public static String getDefaultFileName(String dataType){
         Calendar now = Calendar.getInstance();
         int month = Calendar.MONTH + 1;

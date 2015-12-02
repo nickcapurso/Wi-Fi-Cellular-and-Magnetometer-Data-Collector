@@ -19,4 +19,7 @@
     <string name="wifi_disabled">Wi-Fi is not enabled!</string>
     <string name="no_magnetometer">This device does not have a magnetometer!</string>
     <string name="fileerror">Failed to open or create file!</string>
+    <string name="neverask_filename">Always Use Default Filepath</string>
+    <string name="using_default_path">Using default path: </string>
+    <string name="using_path">Using path: </string>
 </resources>

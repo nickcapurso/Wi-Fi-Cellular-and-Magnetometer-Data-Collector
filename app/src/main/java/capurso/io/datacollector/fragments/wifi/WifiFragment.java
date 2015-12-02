@@ -70,6 +70,8 @@ public class WifiFragment extends ScanFragment{
         getActivity().unregisterReceiver(mReceiver);
     }
 
+
+
     @Override
     protected void startScanning(PrintWriter outputFile) {
         if(false){
@@ -102,6 +104,11 @@ public class WifiFragment extends ScanFragment{
             return true;
         Toast.makeText(getActivity(), getString(R.string.wifi_disabled), Toast.LENGTH_LONG).show();
         return false;
+    }
+
+    @Override
+    protected String getDataType() {
+        return Utils.DATATYPE_WIFI;
     }
 
     private void processScanResults(List<ScanResult> results) {

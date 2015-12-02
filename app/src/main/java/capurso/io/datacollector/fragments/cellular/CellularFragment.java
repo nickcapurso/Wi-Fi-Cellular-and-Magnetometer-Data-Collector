@@ -80,6 +80,11 @@ public class CellularFragment extends ScanFragment{
         return true;
     }
 
+    @Override
+    protected String getDataType() {
+        return Utils.DATATYPE_CELLULAR;
+    }
+
     private CellularInfo processCdmaInfo(CellInfoCdma info){
         int id = info.getCellIdentity().getBasestationId();
         int asu = info.getCellSignalStrength().getAsuLevel();
