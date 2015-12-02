@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/tvSsid"
+        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:text="Placeholder SSID"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvMac"
+        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:gravity="center_horizontal"
+        android:text="11:22:33:44:55:66"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/tvRss"
+        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:gravity="center_horizontal"
+        android:text="-75"
+        android:layout_weight="0.3" />
+
+    <TextView
+        android:id="@+id/tvTimestamp"
+        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:gravity="center_horizontal"
+        android:text="00:11:112"
+        android:layout_weight="0.5" />
+</LinearLayout>

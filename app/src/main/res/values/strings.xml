@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Data Collector</string>
+    <string name="tab_wifi">Wi-Fi</string>
+    <string name="tab_cellular">Cellular</string>
+    <string name="tab_magnetic">Magnetic</string>
+
+    <string name="ssid">SSID</string>
+    <string name="mac">MAC</string>
+    <string name="rss">RSS</string>
+    <string name="timestamp">Time</string>
+    <string name="towerid">Tower ID</string>
+    <string name="magnetic">Magnetometer Value</string>
+    <string name="type">Type</string>
+
+    <string name="start_scan">Start Scanning</string>
+    <string name="stop_scan">Stop Scanning</string>
+    <string name="start_sensor">Start Sensor</string>
+    <string name="stop_sensor">Stop Sensor</string>
+    <string name="wifi_disabled">Wi-Fi is not enabled!</string>
+    <string name="no_magnetometer">This device does not have a magnetometer!</string>
+    <string name="fileerror">Failed to open or create file!</string>
+</resources>
