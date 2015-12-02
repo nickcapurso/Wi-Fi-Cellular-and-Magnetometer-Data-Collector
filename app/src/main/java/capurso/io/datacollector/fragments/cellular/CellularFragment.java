@@ -2,6 +2,7 @@ package capurso.io.datacollector.fragments.cellular;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.telephony.CellInfo;
@@ -20,6 +21,8 @@ import android.widget.Toast;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import capurso.io.datacollector.R;
 import capurso.io.datacollector.common.Utils;
@@ -34,9 +37,17 @@ public class CellularFragment extends ScanFragment{
     private RecyclerView mRvScanResults;
     private CellularInfoAdapter mAdapter;
     private List<CellularInfo> mCellularInfos;
+    private List<CellularInfo> mUpdatedRssList;
 
     private TelephonyManager mTelephonyManager;
     private CellTowerListener mTowerListener;
+
+    private PrintWriter mPrinter;
+
+    private Timer mScanTimer = null;
+    private int mIntervalCount = 0;
+
+    private Handler mHandler;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -46,33 +57,71 @@ public class CellularFragment extends ScanFragment{
         mRvScanResults = (RecyclerView)view.findViewById(R.id.rvScanResults);
         mRvScanResults.setLayoutManager(new LinearLayoutManager(getActivity()));
         mCellularInfos = new ArrayList<>();
+        mUpdatedRssList = new ArrayList<>();
         mAdapter = new CellularInfoAdapter(mCellularInfos, getActivity());
         mRvScanResults.setAdapter(mAdapter);
 
         mTelephonyManager = (TelephonyManager) getContext().getSystemService(Context.TELEPHONY_SERVICE);
         mTowerListener = new CellTowerListener();
+
+        mHandler = new Handler();
         return view;
     }
 
     @Override
     protected void startScanning(PrintWriter outputFile) {
-        if(false){
+        if(outputFile == null){
             Toast.makeText(getActivity(), getString(R.string.fileerror), Toast.LENGTH_LONG).show();
             return;
         }
+
+        mPrinter = outputFile;
+
+        mScanTimer = new Timer();
+        mScanTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                //mWifiManager.startScan();
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        processCellInfoList(mTelephonyManager.getAllCellInfo(), false);
+                    }
+                });
+
+                if(mIntervalCount == Utils.CELL_LIST_CLEAR_INTERVAL){
+                    mIntervalCount = 0;
+                    mCellularInfos.clear();
+                }
+
+                mIntervalCount++;
+            }
+        }, 0, Utils.DEFAULT_SCAN_INTERVAL);
 
         Log.d(TAG, "Starting to listen for cell info");
         mTelephonyManager.listen(
                 mTowerListener,
                 PhoneStateListener.LISTEN_CELL_INFO);
+
     }
 
     @Override
     protected void stopScanning() {
         Log.d(TAG, "Stopping listening for cell info");
+
         mTelephonyManager.listen(
                 mTowerListener,
                 PhoneStateListener.LISTEN_NONE);
+
+        if(mScanTimer != null) {
+            mScanTimer.cancel();
+            mScanTimer = null;
+
+            if(mPrinter != null){
+                mPrinter.close();
+                mPrinter = null;
+            }
+        }
     }
 
     @Override
@@ -90,7 +139,7 @@ public class CellularFragment extends ScanFragment{
         int asu = info.getCellSignalStrength().getAsuLevel();
         int rss = info.getCellSignalStrength().getDbm();
         String type = CellularInfo.TYPE_CDMA;
-        String strRss = (asu == 99 || rss == Integer.MAX_VALUE)? "N/A" : Integer.toString(rss);
+        String strRss = (asu == 99 || rss > 100 || rss < -200)? "N/A" : Integer.toString(rss);
 
         if(id < 0)
             return null;
@@ -103,7 +152,7 @@ public class CellularFragment extends ScanFragment{
         int asu = info.getCellSignalStrength().getAsuLevel();
         int rss = info.getCellSignalStrength().getDbm();
         String type = CellularInfo.TYPE_GSM;
-        String strRss = (asu == 99 || rss == Integer.MAX_VALUE)? "N/A" : Integer.toString(rss);
+        String strRss = (asu == 99 || rss > 100 || rss < -200)? "N/A" : Integer.toString(rss);
 
         if(id < 0)
             return null;
@@ -116,7 +165,7 @@ public class CellularFragment extends ScanFragment{
         int asu = info.getCellSignalStrength().getAsuLevel();
         int rss = info.getCellSignalStrength().getDbm();
         String type = CellularInfo.TYPE_LTE;
-        String strRss = (asu == 99 || rss == Integer.MAX_VALUE)? "N/A" : Integer.toString(rss);
+        String strRss = (asu == 99 || rss > 100 || rss < -200)? "N/A" : Integer.toString(rss);
 
         if(id < 0)
             return null;
@@ -129,7 +178,7 @@ public class CellularFragment extends ScanFragment{
         int asu = info.getCellSignalStrength().getAsuLevel();
         int rss = info.getCellSignalStrength().getDbm();
         String type = CellularInfo.TYPE_WCDMA;
-        String strRss = (asu == 99 || rss == Integer.MAX_VALUE)? "N/A" : Integer.toString(rss);
+        String strRss = (asu == 99 || rss > 100 || rss < -200)? "N/A" : Integer.toString(rss);
 
         if(id < 0)
             return null;
@@ -137,32 +186,69 @@ public class CellularFragment extends ScanFragment{
         return new CellularInfo(Integer.toString(id), type, strRss, Utils.getTimestamp());
     }
 
+    private void processCellInfoList(List<CellInfo> infoList, boolean updateExisting){
+        int existingIndex = 0;
+        if(infoList == null || infoList.size() == 0)
+            return;
+
+        for (CellInfo i : infoList) {
+            CellularInfo newInfo = null;
+
+            if (i instanceof CellInfoCdma) {
+                newInfo = processCdmaInfo((CellInfoCdma) i);
+            } else if (i instanceof CellInfoGsm) {
+                newInfo = processGsmInfo((CellInfoGsm) i);
+            } else if (i instanceof CellInfoLte) {
+                newInfo = processLteInfo((CellInfoLte) i);
+            } else if (i instanceof CellInfoWcdma) {
+                newInfo = processWcdmaInfo((CellInfoWcdma) i);
+            }
+
+            if(newInfo == null)
+                continue;
+
+            if(updateExisting){
+                //Log.d(TAG, "Updating existing info for tower: " + newInfo.towerId + ", rss: " + newInfo.rss);
+                existingIndex = mUpdatedRssList.indexOf(newInfo);
+
+                if(existingIndex != -1)
+                    mUpdatedRssList.set(existingIndex, newInfo);
+                else
+                    mUpdatedRssList.add(newInfo);
+            }else{
+                existingIndex = mUpdatedRssList.indexOf(newInfo);
+                if(existingIndex != -1) {
+                    CellularInfo existingInfo = mUpdatedRssList.get(existingIndex);
+                    mCellularInfos.add(existingInfo);
+
+                    if(mPrinter !=  null) {
+                        String s = existingInfo.toString();
+                        mPrinter.print(s);
+                        Log.d(TAG, s);
+                    }
+                }else {
+                    mCellularInfos.add(newInfo);
+
+                    if(mPrinter !=  null) {
+                        String s = newInfo.toString();
+                        mPrinter.print(s);
+                        Log.d(TAG, s);
+                    }
+                }
+            }
+        }
+
+        if(!updateExisting){
+            mUpdatedRssList.clear();
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
     class CellTowerListener extends PhoneStateListener {
         @Override
         public void onCellInfoChanged(List<CellInfo> cellInfo) {
-            if(cellInfo == null)
-                return;
-
-            Log.d(TAG, "CellInfoChanged");
-            for (CellInfo i : cellInfo) {
-                CellularInfo newInfo = null;
-
-                if (i instanceof CellInfoCdma) {
-                    newInfo = processCdmaInfo((CellInfoCdma) i);
-                } else if (i instanceof CellInfoGsm) {
-                    newInfo = processGsmInfo((CellInfoGsm) i);
-                } else if (i instanceof CellInfoLte) {
-                    newInfo = processLteInfo((CellInfoLte) i);
-                } else if (i instanceof CellInfoWcdma) {
-                    newInfo = processWcdmaInfo((CellInfoWcdma) i);
-                }
-
-                if(newInfo != null){
-                    mCellularInfos.add(newInfo);
-                    mAdapter.notifyDataSetChanged();
-                }
-
-            }
+            processCellInfoList(cellInfo, true);
+            //Log.d(TAG, "CellInfoChanged");
         }
     }
 }

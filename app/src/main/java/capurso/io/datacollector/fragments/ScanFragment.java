@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,12 +25,13 @@ public abstract class ScanFragment extends Fragment implements View.OnClickListe
     private static final String TAG = ScanFragment.class.getName();
     private SharedPreferences mPrefs;
     private String mDataType;
+    private CardView mBtnScan;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.fragment_scan, container, false);
-        CardView button = (CardView)view.findViewById(R.id.btnScan);
-        button.setOnClickListener(this);
+        mBtnScan = (CardView)view.findViewById(R.id.btnScan);
+        mBtnScan.setOnClickListener(this);
 
         mPrefs = getActivity().getSharedPreferences(Utils.PREFS_NAME, 0);
 
@@ -76,6 +78,7 @@ public abstract class ScanFragment extends Fragment implements View.OnClickListe
     @Override
     public void onChosenDir(String chosenDir){
         PrintWriter printer;
+        Log.d(TAG, "Chosen dir: " + chosenDir);
 
         try{
             printer = new PrintWriter(chosenDir);
@@ -84,6 +87,15 @@ public abstract class ScanFragment extends Fragment implements View.OnClickListe
             printer = null;
         }
         startScanning(printer);
+    }
+
+    @Override
+    public void onDialogCanceled(){
+        mBtnScan.setCardBackgroundColor(
+                getResources().getColor(R.color.material_green_500));
+
+        TextView buttonLabel = (TextView) mBtnScan.findViewById(R.id.tvBtnLabel);
+        buttonLabel.setText(getString(R.string.start_scan));
     }
 
     protected abstract void startScanning(PrintWriter outputFile);

@@ -42,6 +42,10 @@ public class WifiFragment extends ScanFragment{
 
     private Timer mScanTimer = null;
 
+    private PrintWriter mPrinter;
+
+    private int mIntervalCount = 0;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = super.onCreateView(inflater, container, savedInstanceState);
@@ -74,10 +78,12 @@ public class WifiFragment extends ScanFragment{
 
     @Override
     protected void startScanning(PrintWriter outputFile) {
-        if(false){
+        if(outputFile == null){
             Toast.makeText(getActivity(), getString(R.string.fileerror), Toast.LENGTH_LONG).show();
             return;
         }
+
+        mPrinter = outputFile;
 
         Log.d(TAG, "Starting continuous wifi scan");
         mScanTimer = new Timer();
@@ -85,6 +91,13 @@ public class WifiFragment extends ScanFragment{
             @Override
             public void run() {
                 mWifiManager.startScan();
+
+                if(mIntervalCount == Utils.AP_LIST_CLEAR_INTERVAL){
+                    mIntervalCount = 0;
+                    mWifiInfos.clear();
+                }
+
+                mIntervalCount++;
             }
         }, 0, Utils.DEFAULT_SCAN_INTERVAL);
     }
@@ -95,6 +108,11 @@ public class WifiFragment extends ScanFragment{
         if(mScanTimer != null) {
             mScanTimer.cancel();
             mScanTimer = null;
+
+            if(mPrinter != null){
+                mPrinter.close();
+                mPrinter = null;
+            }
         }
     }
 
@@ -121,6 +139,12 @@ public class WifiFragment extends ScanFragment{
 
             WifiInfo info = new WifiInfo(result.SSID, result.BSSID, "" + result.level, Utils.getTimestamp());
             mWifiInfos.add(info);
+
+            if(mPrinter !=  null) {
+                String s = info.toString();
+                mPrinter.print(s);
+                Log.d(TAG, s);
+            }
         }
 
         mAdapter.notifyDataSetChanged();

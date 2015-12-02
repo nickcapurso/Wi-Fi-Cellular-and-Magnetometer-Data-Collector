@@ -1,5 +1,7 @@
 package capurso.io.datacollector.fragments.wifi;
 
+import capurso.io.datacollector.common.Utils;
+
 /**
  * Created by cheng on 12/1/15.
  */
@@ -11,5 +13,18 @@ public class WifiInfo {
         this.mac = mac;
         this.rss = rss;
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public String toString(){
+        return new StringBuilder(ssid)
+                .append(Utils.FIELD_DELIMITER)
+                .append(mac)
+                .append(Utils.FIELD_DELIMITER)
+                .append(rss)
+                .append(Utils.FIELD_DELIMITER)
+                .append(timestamp)
+                .append("\n")
+                .toString();
     }
 }

@@ -77,6 +77,7 @@ public class SimpleFileDialog
     public interface SimpleFileDialogListener
     {
         public void onChosenDir(String chosenDir);
+        public void onDialogCanceled();
     }
 
     public SimpleFileDialog(Context context, String file_select_type, SimpleFileDialogListener SimpleFileDialogListener)
@@ -186,7 +187,13 @@ public class SimpleFileDialog
                     }
                 }
             }
-        }).setNegativeButton("Cancel", null);
+        }).setNegativeButton("Cancel", new OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (m_SimpleFileDialogListener != null)
+                    m_SimpleFileDialogListener.onDialogCanceled();
+            }
+        });
 
         final AlertDialog dirsDialog = dialogBuilder.create();
 

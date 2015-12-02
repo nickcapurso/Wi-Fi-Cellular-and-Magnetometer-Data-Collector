@@ -17,8 +17,15 @@ public class Utils {
     public static final long DEFAULT_SCAN_INTERVAL = 3 * ONE_SECOND;
     public static int DEFAULT_SAMPLING_RATE = SensorManager.SENSOR_DELAY_UI;
 
+    public static int AP_LIST_CLEAR_INTERVAL = 4;
+    public static int CELL_LIST_CLEAR_INTERVAL = 8;
+
     public static final String DEFAULT_FILENAME_DELIMITER = "_";
     public static final String DEFAULT_FILE_EXTENSION = ".txt";
+
+    public static final String FIELD_DELIMITER = ",";
+
+    public static final int MAGNETIC_GRAPH_WINDOW_SIZE = 50;
 
     public static final String DATATYPE_WIFI = "WiFi";
     public static final String DATATYPE_CELLULAR = "Cellular";
@@ -40,9 +47,8 @@ public class Utils {
         Calendar now = Calendar.getInstance();
         int month = Calendar.MONTH + 1;
         int day = Calendar.DAY_OF_MONTH;
-        int ampm = Calendar.AM_PM;
 
-        int hour = now.get(Calendar.HOUR);
+        int hour = now.get(Calendar.HOUR_OF_DAY);
         int minute = now.get(Calendar.MINUTE);
         int second = now.get(Calendar.SECOND);
 
@@ -56,7 +62,6 @@ public class Utils {
                 : Integer.toString(minute);
         String strSecond = (second < 10)? new StringBuilder("0").append(Integer.toString(second)).toString()
                 : Integer.toString(second);
-        String strAmPm = (ampm == 0)? "AM" : "PM";
 
         return new StringBuilder(strMonth)
                 .append(DEFAULT_FILENAME_DELIMITER)
@@ -69,8 +74,6 @@ public class Utils {
                 .append(strMinute)
                 .append(DEFAULT_FILENAME_DELIMITER)
                 .append(strSecond)
-                .append(DEFAULT_FILENAME_DELIMITER)
-                .append(strAmPm)
                 .append(DEFAULT_FILE_EXTENSION)
                 .toString();
     }
