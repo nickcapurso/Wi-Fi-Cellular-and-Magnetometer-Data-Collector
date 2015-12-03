@@ -22,4 +22,10 @@
     <string name="neverask_filename">Always Use Default Filepath</string>
     <string name="using_default_path">Using default path: </string>
     <string name="using_path">Using path: </string>
+
+    <string name="current">Current: </string>
+    <string name="set_default_extension">Set Default File Extension</string>
+    <string name="set_extension">Set File Extension</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
 </resources>

@@ -7,7 +7,9 @@ import android.support.v4.app.FragmentPagerAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Keeps track of the fragment tabs.
+ */
 public class ViewPagerAdapter extends FragmentPagerAdapter {
     private final List<FragmentWrapper> mFragmentList = new ArrayList<>();
 

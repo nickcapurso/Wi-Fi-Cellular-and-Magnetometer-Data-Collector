@@ -7,7 +7,7 @@ import android.widget.TextView;
 import capurso.io.datacollector.R;
 
 /**
- * Created by cheng on 12/1/15.
+ * Holds the widgets that comprise a row in a RecyclerView
  */
 public class CellularInfoViewHolder extends RecyclerView.ViewHolder {
     public static final int TYPE_HEADER = 0;

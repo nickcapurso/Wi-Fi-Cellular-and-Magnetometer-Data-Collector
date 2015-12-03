@@ -15,7 +15,7 @@ import capurso.io.datacollector.fragments.cellular.CellularFragment;
 import capurso.io.datacollector.fragments.magnetic.MagneticFragment;
 import capurso.io.datacollector.fragments.wifi.WifiFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements EditTextDialog.EditTextDialogListener {
     private static final String TAG = MainActivity.class.getName();
     private TabLayout mTabLayout;
     private ViewPager mViewPager;
@@ -48,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences(Utils.PREFS_NAME, 0);
         MenuItem checkedItem = menu.findItem(R.id.action_neverask_filename);
         checkedItem.setChecked(prefs.getBoolean(Utils.PREFS_KEY_NEVERASK_PATH, false));
+
+        Utils.DEFAULT_FILE_EXTENSION = (prefs.getString(Utils.PREFS_KEY_FILE_EXTENSION, Utils.DEFAULT_FILE_EXTENSION));
         return true;
     }
 
@@ -67,7 +69,25 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
                 item.setChecked(!item.isChecked());
                 break;
+            case R.id.action_set_extension:
+                Utils.showExtensionDialog(this);
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onPositiveClicked(String input) {
+        SharedPreferences prefs = getSharedPreferences(Utils.PREFS_NAME, 0);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        Utils.DEFAULT_FILE_EXTENSION = input;
+        editor.putString(Utils.PREFS_KEY_FILE_EXTENSION, input);
+        editor.apply();
+    }
+
+    @Override
+    public void onCancelClicked() {
+
     }
 }

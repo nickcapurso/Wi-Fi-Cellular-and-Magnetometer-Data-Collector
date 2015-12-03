@@ -11,7 +11,7 @@ import java.util.List;
 import capurso.io.datacollector.R;
 
 /**
- * Created by cheng on 12/1/15.
+ * Used with a RecyclerView to display WifiInfo objects.
  */
 public class WifiInfoAdapter extends RecyclerView.Adapter<WifiInfoViewHolder> {
     private List<WifiInfo> mItems;
@@ -41,6 +41,7 @@ public class WifiInfoAdapter extends RecyclerView.Adapter<WifiInfoViewHolder> {
             //Get the info object from the list (minus 1 because the item at position 0 is the header)
             WifiInfo info = mItems.get(position - 1);
 
+            //Set data widgets
             holder.setSsid(info.ssid);
             holder.setMac(info.mac);
             holder.setRss(info.rss);

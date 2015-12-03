@@ -11,7 +11,7 @@ import java.util.List;
 import capurso.io.datacollector.R;
 
 /**
- * Created by cheng on 12/1/15.
+ * Used with a RecyclerView to display CellularInfo objects.
  */
 public class CellularInfoAdapter extends RecyclerView.Adapter<CellularInfoViewHolder> {
     private List<CellularInfo> mItems;
@@ -31,7 +31,7 @@ public class CellularInfoAdapter extends RecyclerView.Adapter<CellularInfoViewHo
     @Override
     public void onBindViewHolder(CellularInfoViewHolder holder, int position) {
         if(holder.getViewType() == CellularInfoViewHolder.TYPE_HEADER){
-            //The "fields" of the WifiInfo object will correspond to the header titles
+            //The "fields" of the WifiInfo object will correspond to the header titles in this case
             holder.setTowerId(mContext.getString(R.string.towerid));
             holder.setType(mContext.getString(R.string.type));
             holder.setRss(mContext.getString(R.string.rss));
@@ -41,6 +41,7 @@ public class CellularInfoAdapter extends RecyclerView.Adapter<CellularInfoViewHo
             //Get the info object from the list (minus 1 because the item at position 0 is the header)
             CellularInfo info = mItems.get(position - 1);
 
+            //Set data values
             holder.setTowerId(info.towerId);
             holder.setType(info.type);
             holder.setRss(info.rss);

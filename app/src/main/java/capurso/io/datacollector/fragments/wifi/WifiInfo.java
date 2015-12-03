@@ -3,7 +3,7 @@ package capurso.io.datacollector.fragments.wifi;
 import capurso.io.datacollector.common.Utils;
 
 /**
- * Created by cheng on 12/1/15.
+ * Models the relevant pieces of a Wi-Fi scan result
  */
 public class WifiInfo {
     public String ssid, mac, rss, timestamp;

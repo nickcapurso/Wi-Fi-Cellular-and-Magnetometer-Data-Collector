@@ -3,7 +3,7 @@ package capurso.io.datacollector.fragments.cellular;
 import capurso.io.datacollector.common.Utils;
 
 /**
- * Created by cheng on 12/1/15.
+ * Models a simple cell tower - ID, network type, RSS, timestamp.
  */
 public class CellularInfo {
     public static final String TYPE_CDMA = "CDMA";

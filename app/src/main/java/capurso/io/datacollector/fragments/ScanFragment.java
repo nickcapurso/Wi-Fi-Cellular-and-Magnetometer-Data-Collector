@@ -19,12 +19,22 @@ import capurso.io.datacollector.SimpleFileDialog;
 import capurso.io.datacollector.common.Utils;
 
 /**
- * Created by cheng on 12/1/15.
+ * Abstract class for scan-based fragments due to shared behavior.
  */
 public abstract class ScanFragment extends Fragment implements View.OnClickListener, SimpleFileDialog.SimpleFileDialogListener {
+    /**
+     * LogCat tag.
+     */
     private static final String TAG = ScanFragment.class.getName();
+
+    /**
+     * Reference to the preferences' file.
+     */
     private SharedPreferences mPrefs;
-    private String mDataType;
+
+    /**
+     * Reference to the "Start/Stop Scan" button
+     */
     private CardView mBtnScan;
 
     @Override
@@ -37,6 +47,11 @@ public abstract class ScanFragment extends Fragment implements View.OnClickListe
 
         return view;
     }
+
+    /**
+     * Flip the button text and prepare to open the output file.
+     * @param v
+     */
     @Override
     public void onClick(View v) {
         if(v.getId() == R.id.btnScan) {
@@ -44,16 +59,18 @@ public abstract class ScanFragment extends Fragment implements View.OnClickListe
             TextView buttonLabel = (TextView) v.findViewById(R.id.tvBtnLabel);
 
             if (buttonLabel.getText().toString().equals(getString(R.string.start_scan)) && readyToScan()) {
+                //Flip button text to "Stop Scanning"
                 button.setCardBackgroundColor(
                         getResources().getColor(R.color.material_red_500));
                 buttonLabel.setText(getString(R.string.stop_scan));
 
+                //Check the preferences' file to see if we should skip the save file dialog
                 if(!mPrefs.getBoolean(Utils.PREFS_KEY_NEVERASK_PATH, false)){
-                    SimpleFileDialog FileSaveDialog =  new SimpleFileDialog(getActivity(), "FileSave", this);
-
-                    FileSaveDialog.Default_File_Name = Utils.getDefaultFileName(getDataType());
-                    FileSaveDialog.chooseFile_or_Dir(Utils.getDefaultFilePath());
+                    //Show the dialog
+                    Utils.showSaveFileDialog(getActivity(), Utils.getDefaultFilePath(),
+                            Utils.getDefaultFileName(getDataType()), this);
                 }else{
+                    //Otherwise open the file on the default path
                     PrintWriter printer;
 
                     try{
@@ -67,14 +84,20 @@ public abstract class ScanFragment extends Fragment implements View.OnClickListe
                     startScanning(printer);
                 }
             }else {
+                //Flip button text to "Start Scanning"
                 button.setCardBackgroundColor(
                         getResources().getColor(R.color.material_green_500));
                 buttonLabel.setText(getString(R.string.start_scan));
+
                 stopScanning();
             }
         }
     }
 
+    /**
+     * Attempt to open/create the file that has been selected, then begin scanning
+     * @param chosenDir
+     */
     @Override
     public void onChosenDir(String chosenDir){
         PrintWriter printer;
@@ -86,9 +109,13 @@ public abstract class ScanFragment extends Fragment implements View.OnClickListe
         } catch (FileNotFoundException e){
             printer = null;
         }
+
         startScanning(printer);
     }
 
+    /**
+     * Flip the button back to "Start Scanning" if the user cancelled the dialog.
+     */
     @Override
     public void onDialogCanceled(){
         mBtnScan.setCardBackgroundColor(

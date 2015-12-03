@@ -6,4 +6,8 @@
           android:checkable="true"
           android:orderInCategory="100"
           app:showAsAction="never" />
+    <item android:id="@+id/action_set_extension"
+          android:title="@string/set_extension"
+          android:orderInCategory="101"
+          app:showAsAction="never" />
 </menu>

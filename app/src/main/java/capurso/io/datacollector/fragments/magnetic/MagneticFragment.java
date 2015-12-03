@@ -34,25 +34,50 @@ import capurso.io.datacollector.SimpleFileDialog;
 import capurso.io.datacollector.common.Utils;
 
 /**
- * Created by cheng on 12/1/15.
+ * Registers for magnetometer readings, graphs them, and writes them out to file. Has some similarities
+ * to the abstract ScanFragment class, but is different enough not to extend it.
  */
 public class MagneticFragment extends Fragment implements View.OnClickListener, SimpleFileDialog.SimpleFileDialogListener, SensorEventListener{
+    /**
+     * Logcat tag.
+     */
     private static final String TAG = MagneticFragment.class.getName();
 
+    /**
+     * Reference to the system sensor service.
+     */
     private SensorManager mSensorManager;
+
+    /**
+     * Reference to the magnetometer sensor type.
+     */
     private Sensor mMagnetometer;
 
+    /**
+     * Incrementing counter for the graph's X-axis.
+     */
     private long mPointCount = 0;
 
+    //aChartEngine graph variables
     private GraphicalView mGraphView;
     private XYSeries mSeries;
     private XYMultipleSeriesDataset mDataset;
     private XYSeriesRenderer mRenderer;
     private XYMultipleSeriesRenderer mMultRenderer;
 
+    /**
+     * Reference to the preferences' file.
+     */
     private SharedPreferences mPrefs;
+
+    /**
+     * Used to print to the output file.
+     */
     private PrintWriter mPrinter;
 
+    /**
+     * Reference to the Start Sensor button.
+     */
     private CardView mBtnScan;
 
     @Override
@@ -106,6 +131,10 @@ public class MagneticFragment extends Fragment implements View.OnClickListener, 
         mGraphView = ChartFactory.getLineChartView(getContext(), mDataset, mMultRenderer);
     }
 
+    /**
+     * Flip the button text, prepare the open/create the output file, and start the magnetometer.
+     * @param v
+     */
     @Override
     public void onClick(View v) {
         if(v.getId() == R.id.btnStart){
@@ -113,21 +142,24 @@ public class MagneticFragment extends Fragment implements View.OnClickListener, 
             TextView buttonLabel = (TextView)v.findViewById(R.id.tvBtnLabel);
 
             if(buttonLabel.getText().toString().equals(getString(R.string.start_sensor))){
+                //Check if device actually has a magnetometer
                 if(mSensorManager == null || mMagnetometer == null){
                     Toast.makeText(getActivity(), getString(R.string.no_magnetometer), Toast.LENGTH_LONG).show();
                     return;
                 }
 
+                //Flip button text
                 button.setCardBackgroundColor(
                         getResources().getColor(R.color.material_red_500));
                 buttonLabel.setText(getString(R.string.stop_sensor));
 
+                //Check preferences to see if we should skip the save file dialog.
                 if(!mPrefs.getBoolean(Utils.PREFS_KEY_NEVERASK_PATH, false)){
-                    SimpleFileDialog FileSaveDialog =  new SimpleFileDialog(getActivity(), "FileSave", this);
-
-                    FileSaveDialog.Default_File_Name = Utils.getDefaultFileName(Utils.DATATYPE_MAGNETIC);
-                    FileSaveDialog.chooseFile_or_Dir(Utils.getDefaultFilePath());
+                    //Show dialog
+                    Utils.showSaveFileDialog(getActivity(), Utils.getDefaultFilePath(),
+                            Utils.getDefaultFileName(Utils.DATATYPE_MAGNETIC), this);
                 }else{
+                    //Use default path/file name
                     try{
                         String path = Utils.getDefaultFilePath() + "/" + Utils.getDefaultFileName(Utils.DATATYPE_MAGNETIC);
                         Toast.makeText(getActivity(), getString(R.string.using_default_path) + path, Toast.LENGTH_LONG).show();
@@ -136,6 +168,7 @@ public class MagneticFragment extends Fragment implements View.OnClickListener, 
                         mPrinter = null;
                     }
 
+                    //If there was an error opening the file.
                     if(mPrinter == null){
                         Toast.makeText(getActivity(), getString(R.string.fileerror), Toast.LENGTH_LONG).show();
                         resetButton();
@@ -149,6 +182,7 @@ public class MagneticFragment extends Fragment implements View.OnClickListener, 
 
 
             }else{
+                //Flip button text
                 button.setCardBackgroundColor(
                         getResources().getColor(R.color.material_green_500));
                 buttonLabel.setText(getString(R.string.start_sensor));
@@ -156,6 +190,7 @@ public class MagneticFragment extends Fragment implements View.OnClickListener, 
                 Log.d(TAG, "Stopping magnetometer");
                 mSensorManager.unregisterListener(this);
 
+                //Flush output file and close
                 if(mPrinter != null){
                     mPrinter.flush();
                     mPrinter.close();
@@ -165,9 +200,14 @@ public class MagneticFragment extends Fragment implements View.OnClickListener, 
         }
     }
 
+    /**
+     * Add new point to the graph and adjust Y axis bounds
+     * @param value
+     */
     private void displayNewPoint(double value){
         mSeries.add(mPointCount++, value);
 
+        //Moving window adjustment
         if(mSeries.getItemCount() > Utils.MAGNETIC_GRAPH_WINDOW_SIZE)
             mSeries.remove(0);
 
@@ -176,6 +216,10 @@ public class MagneticFragment extends Fragment implements View.OnClickListener, 
         mGraphView.repaint();
     }
 
+    /**
+     * Handle new sensor value
+     * @param event
+     */
     @Override
     public void onSensorChanged(SensorEvent event) {
         if(event.sensor == mMagnetometer){
@@ -184,9 +228,11 @@ public class MagneticFragment extends Fragment implements View.OnClickListener, 
             y = event.values[1];
             z = event.values[2];
 
+            //Aggregate the three components together
             value = Math.sqrt(x*x+y*y+z*z);
             displayNewPoint(value);
 
+            //Write the new value to file
             if(mPrinter != null)
                 mPrinter.write(new StringBuilder(Double.toString(value))
                 .append(Utils.FIELD_DELIMITER)
@@ -199,6 +245,10 @@ public class MagneticFragment extends Fragment implements View.OnClickListener, 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
+    /**
+     * Open or create the chosen file and start the magnetometer.
+     * @param chosenDir
+     */
     @Override
     public void onChosenDir(String chosenDir) {
         try{
@@ -215,6 +265,9 @@ public class MagneticFragment extends Fragment implements View.OnClickListener, 
         resetButton();
     }
 
+    /**
+     * Reset the Start Sensor button in case the dialog was canceled
+     */
     private void resetButton(){
         mBtnScan.setCardBackgroundColor(
                 getResources().getColor(R.color.material_green_500));
