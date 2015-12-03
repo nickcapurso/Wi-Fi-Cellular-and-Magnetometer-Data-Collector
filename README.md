@@ -12,3 +12,4 @@ Note: The API for obtaining cell tower information is still not very mature, so 
     3. The default filename is of the format <Data>_<Datatype>_<Timestamp>.csv
     4. The default file extension (.csv) can be changed at runtime.
     5. The format of the output file is an unsorted comma-seprated list for import into Microsoft Excel.
+    6. Collected data is displayed in a table-like list and sensor readings are displayed in a realtime-like graph.
